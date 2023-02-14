@@ -3,10 +3,16 @@ export interface Config {
   aspectRatio: number;
 }
 
+export interface CallbackProps {
+  file: File;
+  error: any;
+  response: any;
+}
+
 export interface UploadProps {
   type: "image" | "file";
   iconSrc: string;
-  strategy: (file: File) => Promise<any>;
+  callback: (response: CallbackProps) => any;
   config: Config;
 }
 

@@ -6,16 +6,17 @@ import "./Upload.scss";
 // Definindo a interface das props
 
 import { UploadProps } from "./Upload.types";
+import { axiosPost, responseNormalizer } from "./Axios";
 
 /**
  * Esse é um componente funcional que pode ser usado para fazer upload de arquivos de quase qualquer tipo, e suporta edição em arquivos de imagem.
  *
  * @param type - Escolha entre "image" ou "file", isso vai renderizar dois botões de diferentes.
  * @param iconSrc - O SRC do Icone que vai ser usado no botão.
- * @param strategy - Essa função deve receber um File (file) e ela quem vai fazer o upload do arquivo.
+ * @param callback - Essa função deve receber um File (file) e ela quem vai fazer o upload do arquivo.
  * @returns {JSX.Element} Retorna um componente react.
  */
-const Upload = ({ type, iconSrc, strategy, config }: UploadProps) => {
+const Upload = ({ type, iconSrc, callback, config }: UploadProps) => {
   // Refs
 
   const hiddenFileInput: any = React.useRef(null);
@@ -54,17 +55,27 @@ const Upload = ({ type, iconSrc, strategy, config }: UploadProps) => {
         ? `${file.name.slice(0, 10)}(...) .${file.name.split(".").pop()}`
         : file.name;
 
-    strategy(file).catch((error) => {
-      console.error("[Upload] Erro ao enviar arquivo para o servidor!", error);
-      setFile(null);
-      spanRef.current.innerHTML = "Tente novamente!";
-      spanRef.current.style.color = "red";
+    axiosPost(file, "/api/fileupload")
+      .then((response) => {
+        console.log("[Upload] Arquivo enviado com sucesso!", response);
+        callback(responseNormalizer(response, null, file));
+      })
+      .catch((error) => {
+        callback(responseNormalizer(null, error, file));
 
-      setTimeout(() => {
-        spanRef.current.innerHTML = "Carregar Arquivo";
-        spanRef.current.style.color = "black";
-      }, 3000);
-    });
+        console.error(
+          "[Upload] Erro ao enviar arquivo para o servidor!",
+          error
+        );
+        setFile(null);
+        spanRef.current.innerHTML = "Tente novamente!";
+        spanRef.current.style.color = "red";
+
+        setTimeout(() => {
+          spanRef.current.innerHTML = "Carregar Arquivo";
+          spanRef.current.style.color = "black";
+        }, 3000);
+      });
   };
 
   // Tipo Imagem
@@ -75,10 +86,20 @@ const Upload = ({ type, iconSrc, strategy, config }: UploadProps) => {
 
     console.log("[Upload] Enviando arquivo para o servidor...", file);
 
-    strategy(file).catch((error) => {
-      console.error("[Upload] Erro ao enviar arquivo para o servidor!", error);
-      setFile(null);
-    });
+    axiosPost(file, "/api/fileupload")
+      .then((response) => {
+        console.log("[Upload] Arquivo enviado com sucesso!", response);
+        callback(responseNormalizer(response, null, file));
+      })
+      .catch((error) => {
+        callback(responseNormalizer(null, error, file));
+
+        console.error(
+          "[Upload] Erro ao enviar arquivo para o servidor!",
+          error
+        );
+        setFile(null);
+      });
   };
 
   if (type == "image") {
