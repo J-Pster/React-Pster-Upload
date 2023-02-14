@@ -8,12 +8,22 @@ Basta importar o componente `Upload` e passar as propriedades necessárias para 
 
 ### Propriedades
 
-| Propriedade | Tipo                           | Descrição                                                                                                                                                                 | Obrigatório |
-| ----------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| type        | `image` ou `file`              | Define o tipo de upload que será feito.                                                                                                                                   | Sim         |
-| iconSrc     | `string`                       | Define o ícone que será exibido no botão de upload.                                                                                                                       | Sim         |
-| strategy    | `(file: File) => Promise<any>` | Define a estratégia de upload que será utilizada, precisa ser um função que retorna uma Promisse, pois, caso dê erro, o Upload vai dar um feedback visual para o usuário. | Sim         |
-| config      | `Config`                       | Define as configurações do componente.                                                                                                                                    | Sim         |
+| Propriedade | Tipo                      | Descrição                                                                                                                                       | Obrigatório |
+| ----------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| type        | `image` ou `file`         | Define o tipo de upload que será feito.                                                                                                         | Sim         |
+| iconSrc     | `string`                  | Define o ícone que será exibido no botão de upload.                                                                                             | Sim         |
+| callback    | `(response: any) => void` | É a função que será executada pelo Upload assim que ele enviar para a API o arquivo, o retorno tem o seguinte formato: {file, error, response}; | Sim         |
+| config      | `Config`                  | Define as configurações do componente.                                                                                                          | Sim         |
+
+### Formato de retorno
+
+| Propriedade | Tipo   | Descrição                                |
+| ----------- | ------ | ---------------------------------------- |
+| file        | `File` | É o arquivo que foi enviado para a API.  |
+| error       | `any`  | É o erro que foi retornado pela API.     |
+| response    | `any`  | É a resposta que foi retornada pela API. |
+
+**Quando Error tiver valor o Response será null, e vice-versa, file é sempre retornado!**
 
 ### Config
 
@@ -30,17 +40,8 @@ import React from "react";
 import Upload from "./components/Upload";
 
 function App() {
-  const enviarArquivo = (file: File): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      const random = Math.random();
-
-      if (random < 0.5) {
-        resolve("Arquivo enviado com sucesso!");
-        console.log("[App] Arquivo enviado com sucesso!", file);
-      } else {
-        reject("Houve um erro ao enviar o arquivo!");
-      }
-    });
+  const enviarArquivo = (response: any) => {
+    console.log("Resposta do Upload", response);
   };
 
   return (
@@ -48,7 +49,7 @@ function App() {
       <Upload
         type="image"
         iconSrc="https://i.imgur.com/FAh0OcY.png"
-        strategy={enviarArquivo}
+        callback={enviarArquivo}
         config={{
           maxZoom: 10,
           aspectRatio: 4 / 3,
